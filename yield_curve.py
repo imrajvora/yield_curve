@@ -118,7 +118,9 @@ def curveshiftanalysis(n, cf, fv, curve_drift, key_rate, rate_delta):
 
 curveshiftanalysis(10, 1, 100, 1, 6, 5)
 
-plt.plot(fwdcurve(3))
+print(fwdcurve(3))
+print(discount_curve())
+plt.plot(yieldcurve())
 plt.show()
 
 
