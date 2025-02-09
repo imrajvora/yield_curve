@@ -6,7 +6,7 @@ from setuptools.config.expand import canonic_data_files
 from sklearn.conftest import pyplot
 
 tenor = [2, 5, 10, 30]
-yields = [6, 7, 7.5, 8]
+yields = [3, 5.75, 7.5, 8]
 
 df = pd.DataFrame([tenor, yields]).transpose()
 df = df.set_index(0)
@@ -113,16 +113,44 @@ def bond_npv1(n, cf, fv, curve_drift, key_rate, rate_delta):
 
 
 def curveshiftanalysis(n, cf, fv, curve_drift, key_rate, rate_delta):
+    print("***CURVE SHIFT ANALYSIS BEGINS***")
+    print(f"BOND INFO: {n}Y bond with {cf}$ cashflow paid annually with a face value of {fv}")
     print((bond_npv(n, cf, fv)))
+    print(f"Applying curve drift of {curve_drift}bps across the curve with special {rate_delta}bps sensitivity change to "
+          f"key rate tenor of {key_rate}Y")
     print((bond_npv1(n, cf, fv, curve_drift, key_rate, rate_delta)))
+    print("***CURVE SHIFT ANALYSIS ENDS***")
+    print("  ")
 
-curveshiftanalysis(10, 1, 100, 1, 6, 5)
+curveshiftanalysis(10, 5, 100, 3, 10, 2)
 
-print(fwdcurve(3))
-print(discount_curve())
-plt.plot(yieldcurve())
-plt.show()
+def curve_trade_be(trade_type: str, leg_1, leg_2, horizon):
+    yieldcurve()
+    fwdcurve(horizon)
 
+    if trade_type == "steepner":
+        trade = "steepen"
+    else:
+        trade = "flatten"
+    print("***TRADE INFO BEGINS***")
+    if trade_type == "steepner":
+        og_trade_spread = yieldcurve().loc[leg_1] - yieldcurve().loc[leg_2]
+        fwd_be = fwdcurve(horizon).iloc[leg_1 - horizon - 2] - fwdcurve(horizon).iloc[leg_2 - horizon - 2]
+        fwd_be = (round(fwd_be.values[0], 3))
+        print(f'*Putting on a curve steepner by going long {leg_1}s and short {leg_2}s at {round(og_trade_spread.values[0],4)} bps')
+        print(f'*After {horizon}Y, the orginal trade would have become a long {leg_1 - horizon}s and short {leg_2-horizon}s steepner')
+        print(f'*The break-even suggested by the {horizon}Y forward curve for long {leg_1 - horizon}s and short {leg_2 - horizon}s is {fwd_be}bps')
+        print(f'*Enter the trade only if you think the spread will {trade} by {fwd_be-round(og_trade_spread.values[0],0)}bps')
+    else:
+        og_trade_spread = yieldcurve().loc[leg_2] - yieldcurve().loc[leg_1]
+        fwd_be = fwdcurve(horizon).iloc[leg_2 - horizon - 2] - fwdcurve(horizon).iloc[leg_1 - horizon - 2]
+        fwd_be = (round(fwd_be.values[0], 4))
+        print(fwd_be)
+        print(f'*Putting on a curve flattner by going short {leg_1}s and long {leg_2}s at {round(og_trade_spread.values[0],4)} bps')
+        print(f'*After {horizon}Y, the orginal trade would have become a short {leg_1 - horizon}s and long {leg_2 - horizon}s flattner'
+              f' {round(og_trade_spread.values[0],4)} bps')
+        print(f'*The break-even suggested by the {horizon}Y forward curve for short {leg_2 - horizon}s and long {leg_1 - horizon}s is {fwd_be}bps')
+        print(f'*Enter the trade only if you think the spread will {trade} by {fwd_be-round(og_trade_spread.values[0],0)}bps')
+    print("***TRADE INFO ENDS***")
 
-
-
+curve_trade_be("steepner", 5,7,3)
