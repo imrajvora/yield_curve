@@ -154,3 +154,7 @@ def curve_trade_be(trade_type: str, leg_1, leg_2, horizon):
     print("***TRADE INFO ENDS***")
 
 curve_trade_be("steepner", 5,7,3)
+
+print(yieldcurve())
+print(discount_curve())
+print(fwdcurve(1))
