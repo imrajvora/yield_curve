@@ -58,19 +58,24 @@ def fwdcurve(x):
             crve.append(fwds(row[0],row[0]+x))
             xYYz.append(f"{row[0]}YX{row[0]+x}Y")
     df2 = pd.DataFrame(np.transpose(crve), columns= [f"{x}YR forward curve %"], index = xYYz)
-
-    xY = []
-    yx = []
-    for row in df2.iterrows():
-        if float(row[0][0:2])<10:
-            xY.append((row[0][0:3]))
-            yx.append(row[0][5:-1])
-        else:
-            xY.append((row[0][0:4]))
-            yx.append(row[0][6:-1])
-    df2[f"{x}Y rate starting @"] = xY
-    df2[f"{x}Y rate ending @"] = yx
     return df2
+
+def fwd_curve_tenors(x):
+    df3 = pd.DataFrame(fwdcurve(x))
+    abc = []
+    deg = []
+    for row in df3.iterrows():
+        if float(row[0][0:2])<10:
+            abc.append((row[0][0:3]))
+            deg.append(row[0][5:-1])
+        else:
+            abc.append((row[0][0:4]))
+            deg.append(row[0][6:-1])
+
+    df3[f"{x}Y rate starting @"] = abc
+    df3[f"{x}Y rate ending @"] = deg
+
+    return df3
 
 def discount_curve():
     curve = pd.DataFrame(yieldcurve())
@@ -94,7 +99,7 @@ def bond_npv(n, cf, fv):
 # print(fwdcurve(1))
 # print(yieldcurve())
 
-def curveshifts(curve_drift, key_rate ,rate_delta):
+def curveshifts(curve_drift, key_rate, rate_delta):
     a = pd.DataFrame(discount_curve())
     abc = []
     for row in discount_curve().iterrows():
@@ -197,17 +202,19 @@ def get_yieldcurves():
     plt.axis([0, 31, min(discount_curve()['discount factor']-0.1), max(discount_curve()['discount factor']+0.1)])
     # plt.show()
     plt.subplot(3, 1, 3)
-    plt.plot(fwdcurve(x)[f'{x}Y rate starting @'], round(fwdcurve(x)[f'{x}YR forward curve %'],5))
+    plt.plot(fwd_curve_tenors(x)[f'{x}Y rate starting @'], round(fwd_curve_tenors(x)[f'{x}YR forward curve %'],5))
     plt.xlabel("Tenors")
     plt.ylabel("Yields")
     plt.title(f"{x}Y Forward Curve")
     plt.show()
 
 
-# curve_trade_be("steepner", 5,7,3)
-# curveshiftanalysis(10, 5, 100, 2, 4, -1)
-
+# curve_trade_be("steepner", 4, 5, 2)
+# curveshiftanalysis(15, 3,100,0,2,0)
 get_yieldcurves()
+
+
+
 
 
 # for row in fwdcurve(3).iterrows():
